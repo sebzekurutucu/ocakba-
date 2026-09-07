@@ -1,0 +1,10 @@
+node_modules/
+
+# Gizli anahtarlar — asla GitHub'a yüklenmez
+.env
+.env.local
+service-account.json
+*-service-account.json
+
+# Loglar
+npm-debug.log*

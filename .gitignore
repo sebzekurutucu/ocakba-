@@ -1,0 +1,19 @@
+# Bağımlılıklar
+node_modules/
+
+# Build çıktıları
+dist/
+build/
+
+# Gizli anahtarlar — asla GitHub'a yüklenmez
+.env
+.env.local
+.env.*.local
+service-account.json
+*-service-account.json
+
+# İşletim sistemi / editör
+.DS_Store
+*.log
+.vscode/
+.idea/
