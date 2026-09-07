@@ -1,0 +1,53 @@
+.filter-bar {
+  background: var(--paper-warm);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 20px 0;
+}
+
+.filter-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1 1 240px;
+  padding: 11px 16px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--paper);
+}
+
+.search-input:focus {
+  outline: 2px solid var(--mustard);
+  outline-offset: 1px;
+}
+
+.chip {
+  padding: 9px 16px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--charcoal);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.chip:hover {
+  border-color: var(--forest);
+}
+
+.chip.active {
+  background: var(--forest);
+  color: var(--paper);
+  border-color: var(--forest);
+}

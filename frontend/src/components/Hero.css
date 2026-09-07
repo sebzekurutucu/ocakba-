@@ -1,0 +1,58 @@
+.hero {
+  padding: 56px 0 48px;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 40px;
+  align-items: center;
+}
+
+@media (max-width: 800px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 36px 0 32px;
+  }
+}
+
+.hero h1 {
+  font-size: clamp(34px, 5vw, 54px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--forest-deep);
+  max-width: 11ch;
+}
+
+.hero p {
+  margin-top: 18px;
+  font-size: 17px;
+  color: #55524a;
+  max-width: 42ch;
+}
+
+.hero-stats {
+  display: flex;
+  gap: 32px;
+  margin-top: 28px;
+}
+
+.stat-num {
+  font-family: 'Fraunces', serif;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--brick);
+}
+
+.stat-label {
+  font-size: 13px;
+  color: #7a776c;
+  margin-top: 2px;
+}
+
+.hero-visual {
+  background: var(--forest);
+  border-radius: 6px;
+  padding: 32px;
+  aspect-ratio: 4 / 3.4;
+  display: flex;
+  align-items: flex-end;
+}

@@ -1,0 +1,43 @@
+.recipe-card {
+  background: var(--paper);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.recipe-card:focus-visible {
+  outline: 2px solid var(--mustard);
+  outline-offset: -2px;
+}
+
+.recipe-card.secili {
+  outline: 2px solid var(--mustard);
+  outline-offset: -2px;
+}
+
+.recipe-thumb {
+  aspect-ratio: 5 / 3.4;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.recipe-meta {
+  display: flex;
+  gap: 14px;
+  font-size: 13px;
+  color: #8a8676;
+}
+
+.recipe-card h3 {
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+.recipe-card p {
+  font-size: 14px;
+  color: #6e6b60;
+}
