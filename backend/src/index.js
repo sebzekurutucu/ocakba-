@@ -1,12 +1,11 @@
 // OcakBaşı API — giriş noktası
-// Şimdilik sadece iskelet: sağlık kontrolü ve temel middleware.
-// BigQuery bağlantısı sonraki adımda eklenecek.
 
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
 import healthRouter from "./routes/health.js";
+import tariflerRouter from "./routes/tarifler.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -17,6 +16,7 @@ app.use(express.json());
 
 // Route'lar
 app.use("/health", healthRouter);
+app.use("/api/tarifler", tariflerRouter);
 
 // Kök endpoint — API çalışıyor mu hızlı kontrol
 app.get("/", (req, res) => {

@@ -24,16 +24,15 @@ function anahtarYolu() {
   return path.isAbsolute(ham) ? ham : path.resolve(backendRoot, ham);
 }
 
+let client = null;
 let dataset = null;
 
-// BigQuery dataset bağlantısını döndürür (ilk çağrıda kurar).
-// Yapılandırma eksikse anlaşılır bir hata fırlatır.
-export function getDataset() {
-  if (dataset) return dataset;
+// BigQuery istemcisini döndürür (ilk çağrıda kurar).
+// Anahtar dosyası eksik/bulunamıyorsa anlaşılır bir hata fırlatır.
+export function getBigQuery() {
+  if (client) return client;
 
   const keyFilename = anahtarYolu();
-  const datasetId = process.env.BIGQUERY_DATASET;
-
   if (!keyFilename) {
     throw new Error(
       "GOOGLE_APPLICATION_CREDENTIALS tanımlı değil — backend/.env dosyasına anahtar yolunu ekleyin.",
@@ -42,17 +41,34 @@ export function getDataset() {
   if (!fs.existsSync(keyFilename)) {
     throw new Error(`Servis hesabı dosyası bulunamadı: ${keyFilename}`);
   }
+
+  // Proje kimliği: .env'de yoksa anahtar dosyasından oku (yoksa kütüphane çözsün).
+  let projectId = process.env.GCP_PROJECT_ID || undefined;
+  if (!projectId) {
+    try {
+      projectId = JSON.parse(fs.readFileSync(keyFilename, "utf8")).project_id;
+    } catch {
+      // yok say
+    }
+  }
+
+  client = new BigQuery({ keyFilename, projectId });
+  return client;
+}
+
+// BigQuery dataset bağlantısını döndürür (ilk çağrıda kurar).
+// Yapılandırma eksikse anlaşılır bir hata fırlatır.
+export function getDataset() {
+  if (dataset) return dataset;
+
+  const datasetId = process.env.BIGQUERY_DATASET;
   if (!datasetId) {
     throw new Error(
       "BIGQUERY_DATASET tanımlı değil — backend/.env dosyasına dataset adını ekleyin (ör. ocakbasi_verisi).",
     );
   }
 
-  const bigquery = new BigQuery({
-    keyFilename,
-    projectId: process.env.GCP_PROJECT_ID || undefined,
-  });
-  dataset = bigquery.dataset(datasetId);
+  dataset = getBigQuery().dataset(datasetId);
   return dataset;
 }
 

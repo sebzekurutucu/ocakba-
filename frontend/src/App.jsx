@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { recipes } from './data/recipes'
+import { useEffect, useMemo, useState } from 'react'
+import { tarifleriGetir } from './api'
 import Header from './components/Header'
 import Hero from './components/Hero'
 import FilterBar from './components/FilterBar'
@@ -8,17 +8,41 @@ import ServingsCalculator from './components/ServingsCalculator'
 import Footer from './components/Footer'
 import './App.css'
 
-const FILTRELER = ['Hepsi', '15 dakikada', 'Ekonomik', 'Kahvaltı', 'Tek tencere']
+const FILTRELER = ['Hepsi', '15 dakikada', '30 dakikada']
 
 function App() {
+  const [tarifler, setTarifler] = useState([])
+  const [durum, setDurum] = useState('yukleniyor') // 'yukleniyor' | 'hazir' | 'hata'
+
   const [arama, setArama] = useState('')
   const [aktifFiltre, setAktifFiltre] = useState('Hepsi')
-  const [seciliId, setSeciliId] = useState(recipes[0].id)
+  const [seciliId, setSeciliId] = useState(null)
+
+  useEffect(() => {
+    let iptal = false
+
+    tarifleriGetir()
+      .then((veri) => {
+        if (iptal) return
+        setTarifler(veri)
+        setDurum('hazir')
+      })
+      .catch((err) => {
+        if (iptal) return
+        console.error(err)
+        setDurum('hata')
+      })
+
+    return () => {
+      iptal = true
+    }
+  }, [])
 
   const filtrelenmisTarifler = useMemo(() => {
     const q = arama.trim().toLocaleLowerCase('tr')
+    const dakikaEsi = aktifFiltre.match(/^(\d+) dakikada$/)
 
-    return recipes.filter((tarif) => {
+    return tarifler.filter((tarif) => {
       const aramayaUyar =
         !q ||
         tarif.ad.toLocaleLowerCase('tr').includes(q) ||
@@ -26,22 +50,20 @@ function App() {
           m.ad.toLocaleLowerCase('tr').includes(q),
         )
 
-      const filtreyeUyar =
-        aktifFiltre === 'Hepsi' ||
-        (aktifFiltre === '15 dakikada'
-          ? tarif.sure_dk <= 15
-          : tarif.etiketler.includes(aktifFiltre))
+      const filtreyeUyar = dakikaEsi
+        ? tarif.sure_dk <= Number(dakikaEsi[1])
+        : true
 
       return aramayaUyar && filtreyeUyar
     })
-  }, [arama, aktifFiltre])
+  }, [tarifler, arama, aktifFiltre])
 
   // Hesaplayıcıda gösterilecek tarif: seçili olan; liste onu elemişse
-  // listedeki ilki; hiç sonuç yoksa ilk mock tarif.
+  // listedeki ilk tarif.
   const seciliTarif =
     filtrelenmisTarifler.find((t) => t.id === seciliId) ??
     filtrelenmisTarifler[0] ??
-    recipes[0]
+    null
 
   return (
     <>
@@ -55,12 +77,24 @@ function App() {
         onFiltreChange={setAktifFiltre}
       />
       <main className="wrap">
-        <RecipeGrid
-          tarifler={filtrelenmisTarifler}
-          seciliId={seciliTarif.id}
-          onSec={setSeciliId}
-        />
-        <ServingsCalculator key={seciliTarif.id} tarif={seciliTarif} />
+        {durum === 'yukleniyor' && (
+          <p className="durum-mesaj">Yükleniyor…</p>
+        )}
+        {durum === 'hata' && (
+          <p className="durum-mesaj durum-hata">Tarifler yüklenemedi.</p>
+        )}
+        {durum === 'hazir' && (
+          <>
+            <RecipeGrid
+              tarifler={filtrelenmisTarifler}
+              seciliId={seciliTarif?.id ?? null}
+              onSec={setSeciliId}
+            />
+            {seciliTarif && (
+              <ServingsCalculator key={seciliTarif.id} tarif={seciliTarif} />
+            )}
+          </>
+        )}
       </main>
       <Footer />
     </>
