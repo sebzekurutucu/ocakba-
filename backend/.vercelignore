@@ -1,0 +1,5 @@
+# Bu dosyalar Vercel'e YÜKLENMEZ — gizli anahtarlar ortam değişkeni olarak girilir.
+.env
+.env.*
+service-account.json
+*-service-account.json

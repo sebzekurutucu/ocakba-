@@ -5,6 +5,9 @@
   "type": "module",
   "description": "OcakBaşı API — Node.js + Express",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",

@@ -1,11 +1,16 @@
-// BigQuery bağlantısı.
-// Servis hesabı anahtarının yolu ve dataset adı backend/.env dosyasından okunur:
-//   GOOGLE_APPLICATION_CREDENTIALS  → anahtar JSON dosyasının yolu
-//   BIGQUERY_DATASET               → dataset adı (ör. ocakbasi_verisi)
-//   GCP_PROJECT_ID                 → opsiyonel; verilmezse anahtar dosyasından okunur
+// BigQuery bağlantısı. Kimlik bilgisi iki kaynaktan gelebilir:
 //
-// Bağlantı ilk kullanımda kurulur; anahtar dosyası henüz eklenmediyse
-// sunucu yine de açılır, sadece BigQuery çağrıları anlaşılır bir hata verir.
+//   1. GOOGLE_SERVICE_ACCOUNT_JSON  → servis hesabı JSON'ının tüm içeriği tek
+//      satır olarak (dağıtım ortamı için; dosya sistemi yok).
+//   2. GOOGLE_APPLICATION_CREDENTIALS → yerel service-account.json dosyasının
+//      yolu (yerel geliştirme).
+//
+// Diğer değişkenler:
+//   BIGQUERY_DATASET  → dataset adı (ör. ocakbasi_verisi)
+//   GCP_PROJECT_ID    → opsiyonel; verilmezse kimlik bilgisinden okunur
+//
+// Bağlantı ilk kullanımda kurulur; kimlik bilgisi yoksa sunucu yine de açılır,
+// sadece BigQuery çağrıları anlaşılır bir hata verir.
 
 import path from "node:path";
 import fs from "node:fs";
@@ -28,14 +33,35 @@ let client = null;
 let dataset = null;
 
 // BigQuery istemcisini döndürür (ilk çağrıda kurar).
-// Anahtar dosyası eksik/bulunamıyorsa anlaşılır bir hata fırlatır.
+// Kimlik bilgisi eksik/geçersizse anlaşılır bir hata fırlatır.
 export function getBigQuery() {
   if (client) return client;
 
+  const projeKimligiEnv = process.env.GCP_PROJECT_ID || undefined;
+
+  // 1) Ortam değişkeninden JSON içeriği (dağıtım)
+  const jsonIcerik = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
+  if (jsonIcerik) {
+    let credentials;
+    try {
+      credentials = JSON.parse(jsonIcerik);
+    } catch {
+      throw new Error(
+        "GOOGLE_SERVICE_ACCOUNT_JSON geçerli bir JSON değil.",
+      );
+    }
+    client = new BigQuery({
+      credentials,
+      projectId: projeKimligiEnv || credentials.project_id,
+    });
+    return client;
+  }
+
+  // 2) Yerel dosyadan (yerel geliştirme)
   const keyFilename = anahtarYolu();
   if (!keyFilename) {
     throw new Error(
-      "GOOGLE_APPLICATION_CREDENTIALS tanımlı değil — backend/.env dosyasına anahtar yolunu ekleyin.",
+      "Kimlik bilgisi yok — GOOGLE_SERVICE_ACCOUNT_JSON veya GOOGLE_APPLICATION_CREDENTIALS tanımlayın.",
     );
   }
   if (!fs.existsSync(keyFilename)) {
@@ -43,7 +69,7 @@ export function getBigQuery() {
   }
 
   // Proje kimliği: .env'de yoksa anahtar dosyasından oku (yoksa kütüphane çözsün).
-  let projectId = process.env.GCP_PROJECT_ID || undefined;
+  let projectId = projeKimligiEnv;
   if (!projectId) {
     try {
       projectId = JSON.parse(fs.readFileSync(keyFilename, "utf8")).project_id;
