@@ -66,37 +66,18 @@ Veri "load job" ile yüklenir; bu, faturalama kapalı BigQuery sandbox'ında da
 | GET | `/health/bigquery` | BigQuery bağlantı durumu |
 | GET | `/api/tarifler` | Tüm tarifler (JSON dizi). BigQuery'ye ulaşılamazsa `503 { hata: "tarifler yüklenemedi" }` |
 
-## Vercel'e deploy (serverless function)
+## Vercel'e deploy
 
-Backend, Vercel'de ayrı bir proje olarak deploy edilir; **Root Directory: `backend`**.
-
-- `api/index.js` — serverless function giriş noktası, `src/app.js`'i export eder
-- `vercel.json` — tüm istekleri (`/(.*)`) `/api` fonksiyonuna yönlendirir
-  (rewrite), böylece `/api/tarifler`, `/health` gibi route'lar orijinal yoluyla
-  Express'e ulaşır
-- `src/app.js` — Express app (listen YOK); `src/index.js` sadece yerelde
-  `app.listen` yapar
-
-**Vercel Environment Variables:**
-| Değişken | Değer |
-|---|---|
-| `GOOGLE_SERVICE_ACCOUNT_JSON` | `service-account.json` içeriğinin tamamı, tek satır |
-| `BIGQUERY_DATASET` | `ocakbasi_verisi` |
-
-`.env` ve `service-account.json` `.vercelignore`'da — yüklenmez.
-
-Deploy sonrası kontrol: `https://<proje>.vercel.app/health/bigquery`
-
-Frontend tarafında `VITE_API_URL` ortam değişkenini bu backend URL'sine ayarla.
+Deploy **tek proje** olarak repo kökünden yapılır — bkz. ana [README](../README.md).
+Kökteki `api/index.js`, buradaki `src/app.js`'i Vercel serverless function olarak
+sarar. `src/index.js` yalnızca yerel geliştirmede `app.listen` yapar.
 
 ## Yapı
 
 ```
 backend/
-  api/
-    index.js          → Vercel serverless function giriş noktası
   src/
-    app.js            → Express uygulaması (listen yok)
+    app.js            → Express uygulaması (listen yok — kök api/index.js bunu kullanır)
     index.js          → yerel geliştirme sunucusu (app.listen)
     bigquery.js       → BigQuery bağlantısı (env'den okur)
     data/
@@ -106,6 +87,5 @@ backend/
       tarifler.js     → /api/tarifler
   scripts/
     setup-bigquery.js → dataset + tarifler tablosu + örnek veri
-  vercel.json         → rewrite: /(.*) → /api
   .env.example        → ortam değişkeni şablonu (.env buradan kopyalanır)
 ```
