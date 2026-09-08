@@ -40,17 +40,21 @@ istek atar (`frontend/src/api.js`).
 
 ## Vercel'e deploy (tek proje)
 
-Kök dizindeki `vercel.json` her şeyi yönetir:
+Kök dizindeki `vercel.json` + `package.json` her şeyi yönetir; **dashboard'da hiçbir
+şey ayarlamaya gerek yok**:
 
-- `/api/*` istekleri → `api/index.js` serverless function (`backend/src/app.js`'i sarar)
-- Diğer tüm istekler → `frontend/dist` (Vite build çıktısı), SPA fallback ile
+- Vercel varsayılan install → kök `package.json` bağımlılıkları (function için)
+- `buildCommand: npm run vercel-build` → `frontend/`'i kurar + `vite build` yapar
+- `outputDirectory: frontend/dist` → statik site
+- `api/index.js` → otomatik serverless function (`backend/src/app.js`'i sarar)
+- rewrites: `/api/*` → function, gerisi → `index.html` (SPA fallback)
 
 **Vercel proje ayarları:**
 | Ayar | Değer |
 |---|---|
-| Root Directory | *(boş — repo kökü)* |
-| Framework Preset | Other |
-| Build/Install/Output | `vercel.json`'dan gelir, elle girme |
+| Root Directory | **boş bırak** (repo kökü) — dolu olursa kök `vercel.json` bulunamaz |
+| Framework Preset | Other (veya otomatik) |
+| Build / Install / Output Command | **elle girme** — `vercel.json`'dan gelir |
 
 **Environment Variables:**
 | Değişken | Değer |
@@ -69,8 +73,8 @@ Deploy sonrası kontrol: `https://<proje>.vercel.app/` (site) ve
 ```
 ocakbasi/
   api/index.js    → Vercel serverless function girişi (backend/src/app.js'i export eder)
-  vercel.json     → /api/* → function, gerisi → frontend/dist
-  package.json    → function'ın bağımlılıkları (Vercel için)
+  vercel.json     → buildCommand + outputDirectory + rewrites
+  package.json    → function bağımlılıkları + "vercel-build" script'i
   frontend/       → React arayüzü (Vite)
   backend/        → Express API + BigQuery + kurulum betiği
   PRODUCT.md      → Ürün çerçevesi

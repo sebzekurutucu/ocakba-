@@ -3,9 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "OcakBaşı — tek Vercel projesi (frontend + /api serverless function)",
+  "description": "OcakBaşı — tek Vercel projesi (statik frontend + /api serverless function)",
   "engines": {
     "node": ">=20"
+  },
+  "scripts": {
+    "vercel-build": "npm --prefix frontend install --include=dev && npm --prefix frontend run build"
   },
   "dependencies": {
     "@google-cloud/bigquery": "^9.0.3",
